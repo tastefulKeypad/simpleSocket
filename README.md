@@ -1,10 +1,19 @@
 ## Building examples
 UNIX: 
 ```
-g++ serverExample.cpp -o server -Isrc
+g++ <EXAMPLE.cpp> -o <OUT_NAME> -Isrc -lncurses
+
+// To build a TUI example that uses ncurses:
+g++ <EXAMPLE.cpp> -o <OUT_NAME> -Isrc -lncurses
 ```
 
 Windows:
+> [!NOTE]
+> It is recommended to build and run using ***MSYS2*** or some other POSIX-like environment
 ```
-g++ serverExample.cpp -o server -Isrc -lws2_32
+g++ <EXAMPLE.cpp> -o <OUT_NAME> -Isrc -lws2_32
+
+// To build a TUI example that uses ncurses:
+g++ <EXAMPLE.cpp> -o <OUT_NAME> -Isrc -lws2_32 -lncurses
 ```
+
