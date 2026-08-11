@@ -1,19 +1,8 @@
-## Building examples
-UNIX: 
+## Building examples with CMake
+In order to build examples run:
 ```
-g++ -Isrc <EXAMPLE.cpp> -o <OUT_NAME>
-
-// To build a TUI example that uses ncurses:
-g++ <EXAMPLE.cpp> -o <OUT_NAME> -Isrc -lncurses
+cmake -B build && cmake --build build
 ```
-
-Windows:
 > [!NOTE]
-> It is recommended to build and run using ***MSYS2*** or some other POSIX-like environment with ***MinGW-w64*** toolchain installed 
-```
-g++ -Isrc <EXAMPLE.cpp> -o <OUT_NAME> -lws2_32
-
-// To build a TUI example that uses ncurses:
-g++ -Isrc <EXAMPLE.cpp> -o <OUT_NAME> -lws2_32 -lncurses -DNCURSES_STATIC
-```
-
+> Some examples use 'ncurses' library to implement a simple TUI application <br>
+> To run those examples under **Windows** you should use ***MSYS2*** or some other POSIX-like environment

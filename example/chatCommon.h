@@ -27,15 +27,15 @@ struct Session {
     Session(ssock::ProtocolType protocol) :
         m_isConnected(false),
         m_shouldDisconnect(false),
-        m_sock(protocol),
-        m_startTime(timer::high_resolution_clock::now()) {
+        m_startTime(timer::high_resolution_clock::now()),
+        m_sock(protocol) {
             m_name.reserve(MAXIMUM_NAME_LENGTH);
         }
     Session(SOCKET acceptedSock) :
         m_isConnected(false),
         m_shouldDisconnect(false),
-        m_sock(acceptedSock),
-        m_startTime(timer::high_resolution_clock::now()) {
+        m_startTime(timer::high_resolution_clock::now()),
+        m_sock(acceptedSock) {
             m_name.reserve(MAXIMUM_NAME_LENGTH);
         }
 

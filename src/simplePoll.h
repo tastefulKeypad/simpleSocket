@@ -130,9 +130,9 @@ namespace ssock {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ssize_t Poll::MonitorExists(SOCKET sockfd) {
-        ssize_t monitorId = 0;
+        size_t monitorId = 0;
         for (; monitorId < m_monitoredSockets.size(); ++monitorId) 
-            if (m_monitoredSockets[monitorId].fd == sockfd) return monitorId;
+            if (m_monitoredSockets[monitorId].fd == sockfd) return ssize_t(monitorId);
         return MONITOR_DOES_NOT_EXIST;
     }
     EVENT Poll::GetNativeEventType(EventType event) {

@@ -196,7 +196,7 @@ public:
             UpdateOutputHistory("SYSTEM: Disconnected from server");
         }
         m_client.HandleNetworkData();
-        std::deque<std::string> incomingMessages = std::move(m_client.MoveIncomingMessages());
+        std::deque<std::string> incomingMessages(m_client.MoveIncomingMessages());
         while (!incomingMessages.empty()) {
             UpdateOutputHistory(incomingMessages.front());
             incomingMessages.pop_front();

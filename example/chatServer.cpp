@@ -210,7 +210,7 @@ public:
             m_clients.back().m_sock.GetPeerAddress(addr);
             std::cout << "Accepted client from: " << addr.GetFullAddress() << '\n';
 
-            if (m_clients.size() > m_maxClients) {
+            if (m_clients.size() > size_t(m_maxClients)) {
                 std::string disconnectReason = "Connection refused: chatroom is full!";
                 std::vector<char> serializedPacket = SerializePacket(MakeMessagePacket(m_name, disconnectReason));
                 m_clients.back().m_sock.Write(serializedPacket.data(), serializedPacket.size());
