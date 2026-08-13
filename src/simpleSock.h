@@ -84,6 +84,7 @@ namespace ssock {
         Address();
         Address(std::string, uint16_t);
         ~Address();
+        bool operator==(const Address& other) const noexcept;
     
         int SetAddress(const std::string&);
         std::string GetAddress() const;
@@ -305,6 +306,14 @@ namespace ssock {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    bool Address::operator==(const Address& other) const noexcept {
+        bool addrIsSame = (
+                (this->m_addr.sin_family       == other.m_addr.sin_family) &&
+                (this->m_addr.sin_port         == other.m_addr.sin_port) &&
+                (this->m_addr.sin_addr.s_addr  == other.m_addr.sin_addr.s_addr));
+        return (addrIsSame && (this->m_addrlen == other.m_addrlen));
+    }
+
     Address::Address() {
         m_addr.sin_family = AF_INET;
         memset(m_addr.sin_zero, 0, sizeof(m_addr.sin_zero));
