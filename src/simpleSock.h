@@ -85,11 +85,11 @@ namespace ssock {
         Address(std::string, uint16_t);
         ~Address();
     
-        int SetAddress(std::string);
-        std::string GetAddress();
+        int SetAddress(const std::string&);
+        std::string GetAddress() const;
         void SetPort(uint16_t);
-        uint16_t GetPort();
-        std::string GetFullAddress();
+        uint16_t GetPort() const;
+        std::string GetFullAddress() const;
     
         friend class Socket;
     };
@@ -320,13 +320,13 @@ namespace ssock {
         m_addrlen = sizeof(m_addr);
     }
     Address::~Address() {}
-    int Address::SetAddress(std::string addr) {return inet_pton(AF_INET, addr.c_str(), &m_addr.sin_addr);}
-    std::string Address::GetAddress() {
+    int Address::SetAddress(const std::string &addr) {return inet_pton(AF_INET, addr.c_str(), &m_addr.sin_addr);}
+    std::string Address::GetAddress() const {
         char addr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &m_addr.sin_addr, addr, INET_ADDRSTRLEN);
         return std::string(addr);
     }
     void Address::SetPort(uint16_t port) {m_addr.sin_port = htons(port);}
-    uint16_t Address::GetPort() {return ntohs(m_addr.sin_port);}
-    std::string Address::GetFullAddress() {return GetAddress()+":"+std::to_string(GetPort());}
+    uint16_t Address::GetPort() const {return ntohs(m_addr.sin_port);}
+    std::string Address::GetFullAddress() const {return GetAddress()+":"+std::to_string(GetPort());}
 };

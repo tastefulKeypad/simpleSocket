@@ -1,8 +1,9 @@
 #include "simpleSock.h"
+#include <array>
 
-const int BUFFER_SIZE = 512;
+const size_t BUFFER_SIZE = 512;
 
-void LogError(std::string msg) {
+void LogError(const std::string &msg) {
     std::cout << msg << '\n' << "Reason: "
               << ssock::GetErrorMsg(ssock::GetLastError()) << '\n';
 }
@@ -10,17 +11,17 @@ void LogError(std::string msg) {
 class Client {
 private:
     ssock::Socket m_sock;
-    char m_buffer[BUFFER_SIZE];
+    std::array<char, BUFFER_SIZE> m_buffer;
 
 public:
-    Client() : m_sock(ssock::ProtocolType::TCP) {memset(m_buffer, 0, BUFFER_SIZE);}
+    Client() : m_sock(ssock::ProtocolType::TCP) {}
     ~Client() {}
 
-    errcode_t Connect(ssock::Address serverAddr) {
+    errcode_t Connect(const ssock::Address &serverAddr) {
         std::cout << "Will try to connect to " << serverAddr.GetFullAddress() << '\n'; 
         if (m_sock.Connect(serverAddr) == SOCKET_ERROR) return SOCKET_ERROR;
-        ssock::Address addr;
         std::cout << "Connected to server!\n";
+        ssock::Address addr;
         m_sock.GetSockAddress(addr);
         std::cout << "Local client sock address  = " << addr.GetFullAddress() << '\n';
         m_sock.GetPeerAddress(addr);
@@ -29,11 +30,12 @@ public:
     }
 
     void Receive() {
-        int readBytes = m_sock.Read(m_buffer, BUFFER_SIZE);
-        std::cout << "Received " << readBytes << " bytes: " << m_buffer << '\n';
+        m_buffer.fill(0);
+        int readBytes = m_sock.Read(m_buffer.data(), BUFFER_SIZE);
+        std::cout << "Received " << readBytes << " bytes: " << m_buffer.data() << '\n';
     }
 
-    void Send(std::string word) {
+    void Send(const std::string &word) {
         int sentBytes = m_sock.Write(word.c_str(), word.size());
         std::cout << "Sent " << sentBytes << " bytes: " << word.substr(0, sentBytes) << '\n';
     }
