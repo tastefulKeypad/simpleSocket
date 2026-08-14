@@ -59,11 +59,11 @@ namespace ssock {
         errcode_t GetSockAddress(Address&);
         errcode_t GetPeerAddress(Address&);
     
-        bool IsBlocking();
+        bool IsBlocking() const noexcept;
         bool IsConnected();
         errcode_t  SwitchBlockingState();
-        ProtocolType GetProtocolType();
-        SOCKET GetSocket();
+        ProtocolType GetProtocolType() const noexcept;
+        SOCKET GetSocket() const noexcept;
     
         int Write(const char*, size_t);
         int Write(const char*, size_t, Address&);
@@ -177,7 +177,7 @@ namespace ssock {
     
     errcode_t Socket::GetSockAddress(Address& sockAddress) {return getsockname(m_sock, (sockaddr*) &sockAddress.m_addr, &sockAddress.m_addrlen);}
     errcode_t Socket::GetPeerAddress(Address& peerAddress) {return getpeername(m_sock, (sockaddr*) &peerAddress.m_addr, &peerAddress.m_addrlen);}
-    bool Socket::IsBlocking() {return m_isBlocking;}
+    bool Socket::IsBlocking() const noexcept {return m_isBlocking;}
     bool Socket::IsConnected() {
         errcode_t ec;
         socklen_t ecSize = sizeof(ec);
@@ -197,8 +197,8 @@ namespace ssock {
         if (ec != SOCKET_ERROR) m_isBlocking = !m_isBlocking;
         return ec;
     }
-    ProtocolType Socket::GetProtocolType() {return m_protocol;}
-    SOCKET Socket::GetSocket() {return m_sock;}
+    ProtocolType Socket::GetProtocolType() const noexcept {return m_protocol;}
+    SOCKET Socket::GetSocket() const noexcept {return m_sock;}
     
     int Socket::Write(const char *buf, size_t bufSize) {
         #ifdef _WIN32

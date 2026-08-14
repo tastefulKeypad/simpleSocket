@@ -2,8 +2,8 @@
 #include <array>
 
 const size_t BUFFER_SIZE    = 512;
-const int    REPEAT_COUNT   = 10,
-             POLL_WAIT_TIME = 200; // in ms
+const int    REPEAT_COUNT   = 3,
+             POLL_WAIT_TIME = 120; // in ms
 
 void LogError(const std::string &msg) {
     std::cout << msg << '\n' << "Reason: "
@@ -23,6 +23,11 @@ public:
         m_sock(ssock::ProtocolType::UDP), 
         m_addr(addrIn) {}
     ~Client() {}
+
+    void Bind() {
+        uint16_t port = 7070;
+        while (m_sock.Bind(ssock::Address("0.0.0.0", port)) == SOCKET_ERROR) ++port;
+    }
 
     void Receive() {
         m_buffer.fill(0);
@@ -50,24 +55,35 @@ public:
     }
 
     bool TryToConnectToPeer(int repeatCount) {
+        int tempRepeatCount = repeatCount;
+        ssock::Address tempAddr = m_addr;
         m_sock.SwitchBlockingState();
         m_poll.AddMonitor(m_sock.GetSocket(), ssock::EventType::ReadReady);
-        while (--repeatCount >= 0) {
-            Send("HELLO PEER");
-            ssize_t readyMonitorCount = m_poll.WaitForReadiness(POLL_WAIT_TIME);
-            if (readyMonitorCount <= 0) continue;
-            auto readyMonitors = m_poll.GetReadyMonitors(size_t(readyMonitorCount));
-            auto &pendingEvent = readyMonitors.back().revents;
-            if (pendingEvent & ssock::EventType::ReadReady) {
-                ssock::Address addrIn;
-                m_buffer.fill(0);
-                int readBytes = m_sock.Read(m_buffer.data(), BUFFER_SIZE, addrIn);
-                std::cout << "Received " << readBytes << " bytes: " << m_buffer.data() << '\n';
-                std::cout << "Message origin address: " << addrIn.GetFullAddress() << '\n';
-                m_bufferSize = readBytes;
-                if (addrIn.GetAddress() == m_addr.GetAddress()) {
-                    m_addr = addrIn;
-                    return true;
+        
+        // Here we also try port+1 & port+10 to try and traverse a simple symmetric NAT
+        for (size_t i = 0; i != 3; ++i) {
+            repeatCount = tempRepeatCount;
+            while (--repeatCount >= 0) {
+                if (i == 0) m_addr.SetPort(tempAddr.GetPort());
+                else if (i == 1) m_addr.SetPort(tempAddr.GetPort()+1);
+                else if (i == 2) m_addr.SetPort(tempAddr.GetPort()+10);
+                Send("HELLO PEER");
+                ssize_t readyMonitorCount = m_poll.WaitForReadiness(POLL_WAIT_TIME);
+                if (readyMonitorCount <= 0) continue;
+                auto readyMonitors = m_poll.GetReadyMonitors(size_t(readyMonitorCount));
+                auto &pendingEvent = readyMonitors.back().revents;
+                if (pendingEvent & ssock::EventType::ReadReady) {
+                    ssock::Address addrIn;
+                    m_buffer.fill(0);
+                    int readBytes = m_sock.Read(m_buffer.data(), BUFFER_SIZE, addrIn);
+                    std::cout << "Received " << readBytes << " bytes: " << m_buffer.data() << '\n';
+                    std::cout << "Message origin address: " << addrIn.GetFullAddress() << '\n';
+                    m_bufferSize = readBytes;
+                    if (addrIn.GetAddress() == m_addr.GetAddress()) {
+                        if (!m_sock.IsBlocking()) m_sock.SwitchBlockingState();
+                        m_addr = addrIn;
+                        return true;
+                    }
                 }
             }
         }
@@ -87,6 +103,7 @@ int main(int argc, char* argv[]) {
     ssock::WinStartup();
     {
         Client client(ssock::Address(addr, port));
+        client.Bind();
         client.Send(msg);
         client.Receive();
         client.UpdateTargetAddress();
