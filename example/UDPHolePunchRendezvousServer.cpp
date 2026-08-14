@@ -1,5 +1,4 @@
 #include "simpleSock.h"
-#include <csignal>
 #include <vector>
 #include <array>
 #include <algorithm>
@@ -7,7 +6,7 @@
 
 const size_t BUFFER_SIZE = 128;
 
-class RelayServer {
+class RendezvousServer {
 private:
     size_t m_bufferSize;
     ssock::Socket m_sock;
@@ -15,15 +14,15 @@ private:
     std::vector<ssock::Address> m_hosts;
 
 public:
-    RelayServer() 
+    RendezvousServer() 
         : m_sock(ssock::ProtocolType::UDP) {}
-    ~RelayServer() {}
+    ~RendezvousServer() {}
 
     errcode_t Bind(const ssock::Address &addrIn) {
         std::cout << "Will try to bind server at " << addrIn.GetPort() << " port\n";
         if (m_sock.Bind(addrIn) == SOCKET_ERROR)
             return SOCKET_ERROR;
-        std::cout << "Started relay server at address: " <<  addrIn.GetFullAddress() << '\n';
+        std::cout << "Started rendezvous server at address: " <<  addrIn.GetFullAddress() << '\n';
         return SUCCESS;
     }
     void ProcessClients() {
@@ -58,34 +57,25 @@ public:
         // Tell host/client to start UDP punch hole
         hostAddr = m_hosts[hostId];
         m_hosts.erase(m_hosts.begin()+hostId);
-        //for now, just notify them about connection
         std::string clientAddrStr = clientAddr.GetFullAddress(),
                     hostAddrStr   = hostAddr.GetFullAddress();
-
-        //clientAddrStr = "yeah, go on";
-        //hostAddrStr = "yeah, go on";
-
         m_sock.Write(clientAddrStr.data(), clientAddrStr.size(), hostAddr);
         m_sock.Write(hostAddrStr.data(), hostAddrStr.size(), clientAddr);
     }
 };
 
-volatile sig_atomic_t g_isRunning = 1;
-void SIGINTCallback(int sig) {g_isRunning = 0;}
-
 int main(int argc, char* argv[]) {
-    //std::signal(SIGINT, SIGINTCallback);
     uint16_t port = 8080;
     if (argc > 1) port = std::atoi(argv[1]);
     ssock::WinStartup();
     {
-        RelayServer relay;
+        RendezvousServer relay;
         if (relay.Bind(ssock::Address("0.0.0.0", port)) == SOCKET_ERROR) {
-            std::cout << "Failed to start relay server\n";
+            std::cout << "Failed to start rendezvous server\n";
             std::cout << "Reason: " << ssock::GetErrorMsg(ssock::GetLastError()) << '\n';
             return static_cast<errcode_t>(ssock::GetLastError());
         }
-        while (g_isRunning) {
+        while (true) {
             relay.ProcessClients();
         }
     }
